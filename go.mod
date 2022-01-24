@@ -1,3 +1,3 @@
-module go.clly.me/mimic
+module go.clly.me/minic
 
 go 1.17
