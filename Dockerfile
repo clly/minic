@@ -7,7 +7,7 @@ RUN make
 FROM ubuntu
 
 WORKDIR /opt
-COPY --from=build /build/goregex ./
+COPY --from=build /build/minic ./
 
 USER nobody
-ENTRYPOINT ["/opt/goregex"]
+ENTRYPOINT ["/opt/minic"]
