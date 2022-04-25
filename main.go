@@ -3,28 +3,32 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"go.clly.me/minic/sdk"
 	"log"
 	"net/http"
 	"regexp"
 	"sort"
 	"strings"
+
+	"go.clly.me/minic/sdk"
 )
 
 func main() {
 	fmt.Println("hello world")
-	mux := serveMux()
 
+	mux := sdk.NewMux()
+	handlers(mux)
 	srv := sdk.ConfigureHTTP(mux)
 
 	// TODO: Easier signal handling
 	log.Fatal(srv.ListenAndServe())
 }
 
-func serveMux() *http.ServeMux {
-	m := http.NewServeMux()
+func handlers(m *http.ServeMux) {
+	if m == nil {
+		panic("serve mux is nil")
+	}
 	m.HandleFunc("/", handler())
-	return m
+
 }
 
 func handler() http.HandlerFunc {

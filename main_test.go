@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_server(t *testing.T) {
@@ -28,7 +29,8 @@ func Test_server(t *testing.T) {
 
 	for _, test := range testcase {
 		require := require.New(t)
-		mux := serveMux()
+		mux := http.NewServeMux()
+		handlers(mux)
 		svr := httptest.NewServer(mux)
 		c := svr.Client()
 		req, err := http.NewRequest(http.MethodGet, svr.URL, nil)
