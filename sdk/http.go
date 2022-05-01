@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"errors"
 	"net/http"
 	"time"
 )
@@ -35,17 +34,13 @@ func ConfigureHTTP(handler http.Handler) *http.Server {
 
 func NewMux() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle("/healthz", healthz(AlwaysOK))
+	mux.Handle("/healthz", healthz(HealthcheckerFunc(AlwaysOK)))
 	return mux
 }
 
-func AlwaysOK() error { return nil }
-
-func AlwaysFailing() error { return errors.New("oopsie") }
-
-func healthz(health func() error) http.Handler {
+func healthz(check Healthchecker) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := health()
+		err := check.Health(r.Context())
 		if err != nil {
 			w.WriteHeader(512)
 		} else {

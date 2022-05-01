@@ -1,13 +1,6 @@
 package sdk
 
-import (
-	"net/http/httptest"
-	"path"
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
-
+/*
 func Test_NewMuxWithHealthcheck(t *testing.T) {
 	require := require.New(t)
 	mux := NewMux()
@@ -19,7 +12,7 @@ func Test_NewMuxWithHealthcheck(t *testing.T) {
 	require.Equal(resp.StatusCode, 200)
 }
 
-/*
+
 func Test_NewMuxWithOverriddeHealthcheck(t *testing.T) {
 	require := require.New(t)
 	mux := NewMux()
