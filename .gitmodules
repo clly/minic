@@ -1,3 +1,4 @@
 [submodule ".makefiles"]
 	path = .makefiles
 	url = git@github.com:clly/makefiles.git
+	branch = main
