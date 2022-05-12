@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"sync"
-	"sync/atomic"
 )
 
 func AlwaysOK(context.Context) error { return nil }
@@ -14,7 +13,7 @@ func AlwaysFailing(context.Context) error { return errors.New("oopsie") }
 type Healthcheck struct {
 	checks     map[string]Healthchecker
 	m          *sync.RWMutex
-	initalized atomic.Value
+	initalized sync.Once
 }
 
 type result struct {
@@ -32,11 +31,10 @@ func (h *Healthcheck) AddHealthcheck(name string, check Healthchecker) error {
 }
 
 func (h *Healthcheck) initialize() {
-	if h.initalized.Load() == nil {
+	h.initalized.Do(func() {
 		h.m = &sync.RWMutex{}
 		h.checks = make(map[string]Healthchecker)
-		h.initalized.Store(true)
-	}
+	})
 }
 
 type Healthchecker interface {

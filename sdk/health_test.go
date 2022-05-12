@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,5 +25,16 @@ func Test_AddHealthcheck(t *testing.T) {
 			require.Equal(result.Result, 1)
 			require.Equal(result.Name, "not-ok")
 		}
+	}
+}
+
+func Test_ParallelAddHealthcheck(t *testing.T) {
+	h := &Healthcheck{}
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("n%d", i), func(t *testing.T) {
+			t.Parallel()
+			h.AddHealthcheck("ok", HealthcheckerFunc(AlwaysOK))
+			h.AddHealthcheck("ok", HealthcheckerFunc(AlwaysFailing))
+		})
 	}
 }
