@@ -2,8 +2,13 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
+	"os"
 	"sync"
+	"time"
 )
 
 func AlwaysOK(context.Context) error { return nil }
@@ -62,4 +67,51 @@ func runCheck(ctx context.Context, name string, check Healthchecker) result {
 		Result:  state,
 		Message: msg,
 	}
+}
+
+// This should be replaced with something on the healthcheck struct
+var healthcheckTimeout = 30 * time.Second
+
+func (h *Healthcheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "  ")
+	ctx, cancel := context.WithTimeout(ctx, healthcheckTimeout)
+	defer cancel()
+
+	out := make(chan []result)
+	runChecks := func(ctx context.Context) {
+		results := h.runChecks(ctx)
+		out <- results
+	}
+
+	var results []result
+	go runChecks(ctx)
+	select {
+	case <-ctx.Done():
+		results = <-out
+		w.WriteHeader(http.StatusGatewayTimeout)
+	case results = <-out:
+	}
+	err := encoder.Encode(results)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "failed to write healthcheck results", err.Error())
+	}
+}
+
+func (h *Healthcheck) runChecks(ctx context.Context) []result {
+	results := make([]result, 0, len(h.checks))
+	h.m.RLock()
+	for name, check := range h.checks {
+		if ctx.Err() != nil {
+			results = append(results, result{
+				Name:    name,
+				Result:  -1,
+				Message: "healthcheck execution timed out",
+			})
+		}
+		result := runCheck(ctx, name, check)
+		results = append(results, result)
+	}
+	return results
 }
