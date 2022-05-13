@@ -93,6 +93,11 @@ func (h *Healthcheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusGatewayTimeout)
 	case results = <-out:
 	}
+	for _, result := range results {
+		if result.Result != 0 {
+			w.WriteHeader(512)
+		}
+	}
 	err := encoder.Encode(results)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to write healthcheck results", err.Error())

@@ -61,6 +61,11 @@ func Test_Serve(t *testing.T) {
 				return nil
 			}),
 		},
+		{
+			name:         "fail",
+			responseCode: 512,
+			extraCheck:   HealthcheckerFunc(AlwaysFailing),
+		},
 	}
 
 	healthcheckTimeout = 1 * time.Second
@@ -73,6 +78,7 @@ func Test_Serve(t *testing.T) {
 			if tc.extraCheck != nil {
 				h.AddHealthcheck("timeout", tc.extraCheck)
 			}
+			h.AddHealthcheck("ok", HealthcheckerFunc(AlwaysOK))
 
 			srv := httptest.NewServer(h)
 			resp, err := http.Get(srv.URL)
